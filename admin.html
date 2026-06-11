@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Desentupi Pro — Painel Admin</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#060a14;--bg2:#0c1220;--bg3:#111827;--bg4:#1a2235;
+  --border:#1e2d45;--blue:#2563eb;--blue-l:#3b82f6;
+  --green:#22c55e;--red:#ef4444;--orange:#f97316;--amber:#f59e0b;
+  --txt:#f1f5f9;--txt2:#94a3b8;--txt3:#475569;
+}
+body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh}
+.sidebar{width:220px;background:var(--bg2);border-right:0.5px solid var(--border);position:fixed;top:0;left:0;bottom:0;display:flex;flex-direction:column}
+.logo{padding:18px 16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:10px}
+.logo-icon{width:32px;height:32px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.logo-text{font-size:13px;font-weight:700;color:var(--txt);letter-spacing:.5px}
+.logo-sub{font-size:9px;color:var(--blue-l);letter-spacing:1px;font-weight:600}
+nav{padding:8px 0;flex:1}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;font-size:12px;color:var(--txt3);transition:all .15s;border-left:2px solid transparent}
+.nav-item:hover{color:var(--txt);background:var(--bg3)}
+.nav-item.active{color:var(--blue-l);background:var(--bg3);border-left-color:var(--blue)}
+.nav-item .icon{font-size:16px}
+.sidebar-footer{padding:14px 16px;border-top:0.5px solid var(--border);font-size:11px;color:var(--txt3)}
+.main{margin-left:220px;padding:24px}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.page-title{font-size:18px;font-weight:700;color:var(--txt);letter-spacing:-.3px}
+.live-badge{background:rgba(34,197,94,.1);border:0.5px solid rgba(34,197,94,.2);color:var(--green);font-size:10px;font-weight:600;padding:4px 10px;border-radius:20px;display:flex;align-items:center;gap:5px}
+.pulse{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.metric{background:var(--bg3);border:0.5px solid var(--border);border-radius:14px;padding:16px}
+.metric-lbl{font-size:10px;color:var(--txt3);margin-bottom:8px;display:flex;align-items:center;gap:6px;font-weight:500;letter-spacing:.3px}
+.metric-val{font-size:28px;font-weight:700;color:var(--txt);letter-spacing:-1px}
+.metric-sub{font-size:10px;margin-top:4px;font-weight:500}
+.grid2{display:grid;grid-template-columns:1fr 360px;gap:16px;margin-bottom:20px}
+.card{background:var(--bg3);border:0.5px solid var(--border);border-radius:14px;overflow:hidden}
+.card-header{padding:12px 16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:12px;font-weight:600;color:var(--txt2);display:flex;align-items:center;gap:6px}
+.see-all{font-size:10px;color:var(--blue-l);cursor:pointer;font-weight:500}
+.call-item{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:0.5px solid var(--border);cursor:pointer;transition:background .12s}
+.call-item:hover{background:var(--bg4)}
+.call-item:last-child{border:none}
+.call-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+.call-info{flex:1;min-width:0}
+.call-name{font-size:12px;font-weight:600;color:var(--txt)}
+.call-addr{font-size:10px;color:var(--txt3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.call-meta{display:flex;align-items:center;justify-content:space-between;margin-top:2px}
+.call-partner{font-size:10px;color:var(--txt3)}
+.call-time{font-size:9px;color:var(--txt4,#2d3f5a)}
+.tag{display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;font-size:9px;font-weight:600;letter-spacing:.2px}
+.tag-blue{background:rgba(37,99,235,.15);color:var(--blue-l);border:0.5px solid rgba(37,99,235,.3)}
+.tag-green{background:rgba(34,197,94,.12);color:var(--green);border:0.5px solid rgba(34,197,94,.25)}
+.tag-orange{background:rgba(249,115,22,.12);color:var(--orange);border:0.5px solid rgba(249,115,22,.25)}
+.tag-red{background:rgba(239,68,68,.12);color:var(--red);border:0.5px solid rgba(239,68,68,.25)}
+.tag-amber{background:rgba(245,158,11,.12);color:var(--amber);border:0.5px solid rgba(245,158,11,.25)}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:100}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg2);border:0.5px solid var(--blue);border-radius:16px;width:400px;overflow:hidden}
+.modal-header{background:var(--blue);padding:14px 16px;display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:13px;font-weight:600;color:#fff;display:flex;align-items:center;gap:7px}
+.modal-close{color:rgba(255,255,255,.7);cursor:pointer;font-size:18px;line-height:1}
+.modal-body{padding:16px}
+.form-group{margin-bottom:12px}
+.form-label{font-size:10px;color:var(--txt3);margin-bottom:6px;display:block;font-weight:600;letter-spacing:.3px}
+.form-input{width:100%;background:var(--bg);border:0.5px solid var(--border);border-radius:8px;padding:9px 11px;font-size:12px;color:var(--txt);outline:none;font-family:inherit}
+.form-input:focus{border-color:var(--blue)}
+.form-select{width:100%;background:var(--bg);border:0.5px solid var(--border);border-radius:8px;padding:9px 11px;font-size:12px;color:var(--txt);outline:none;font-family:inherit}
+.btn-primary{width:100%;background:var(--blue);color:#fff;border:none;padding:11px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;font-family:inherit;transition:opacity .15s}
+.btn-primary:hover{opacity:.9}
+.btn-primary:disabled{opacity:.6;cursor:not-allowed}
+.new-call-btn{background:var(--blue);color:#fff;border:none;padding:8px 14px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--bg3);border:0.5px solid var(--green);border-radius:10px;padding:12px 16px;color:var(--green);font-size:12px;font-weight:500;z-index:200;animation:slideUp .3s ease;display:flex;align-items:center;gap:8px}
+@keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.map-area{height:200px;background:var(--bg2);position:relative;overflow:hidden}
+.empty{padding:32px;text-align:center;color:var(--txt3);font-size:12px}
+.loading{padding:20px;text-align:center;color:var(--txt3);font-size:11px}
+.section{margin-bottom:20px}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">🔧</div>
+    <div><div class="logo-text">DESENTUPI PRO</div><div class="logo-sub">ADMIN</div></div>
+  </div>
+  <nav>
+    <div class="nav-item active" onclick="setPage('dashboard')"><span class="icon">📊</span> Dashboard</div>
+    <div class="nav-item" onclick="setPage('chamados')"><span class="icon">🔔</span> Chamados</div>
+    <div class="nav-item" onclick="setPage('parceiros')"><span class="icon">👥</span> Parceiros</div>
+    <div class="nav-item" onclick="setPage('mapa')"><span class="icon">🗺️</span> Mapa</div>
+  </nav>
+  <div class="sidebar-footer">
+    <div style="font-size:10px;color:var(--txt3)">Conectado ao Firebase</div>
+    <div style="font-size:11px;color:var(--txt2);margin-top:2px;font-weight:500">Edson — Admin</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="page-title" id="page-title">Dashboard</div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="live-badge"><div class="pulse"></div> Ao vivo</div>
+      <button class="new-call-btn" onclick="openModal()">＋ Novo chamado</button>
+    </div>
+  </div>
+
+  <!-- METRICS -->
+  <div class="metrics">
+    <div class="metric">
+      <div class="metric-lbl">🔔 Chamados hoje</div>
+      <div class="metric-val" id="m-hoje">0</div>
+      <div class="metric-sub" style="color:var(--orange)">Carregando...</div>
+    </div>
+    <div class="metric">
+      <div class="metric-lbl">⚡ Em andamento</div>
+      <div class="metric-val" id="m-andamento">0</div>
+      <div class="metric-sub" style="color:var(--amber)">Agora</div>
+    </div>
+    <div class="metric">
+      <div class="metric-lbl">✅ Concluídos</div>
+      <div class="metric-val" id="m-conc">0</div>
+      <div class="metric-sub" style="color:var(--green)">Hoje</div>
+    </div>
+    <div class="metric">
+      <div class="metric-lbl">🟢 Parceiros online</div>
+      <div class="metric-val" id="m-online">0</div>
+      <div class="metric-sub" style="color:var(--blue-l)">Disponíveis</div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <!-- MAPA -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">🗺️ Mapa em tempo real</span>
+        <span class="tag tag-green" style="font-size:9px">● Ao vivo</span>
+      </div>
+      <div class="map-area" id="map-area">
+        <svg width="100%" height="100%" viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
+          <rect width="500" height="200" fill="#080e1a"/>
+          <defs><pattern id="g" width="30" height="30" patternUnits="userSpaceOnUse"><path d="M30 0L0 0 0 30" fill="none" stroke="#111d2f" stroke-width="1"/></pattern></defs>
+          <rect width="500" height="200" fill="url(#g)"/>
+          <rect x="0" y="95" width="500" height="4" fill="#111d30" rx="2"/>
+          <rect x="150" y="0" width="4" height="200" fill="#111d30" rx="2"/>
+          <rect x="320" y="0" width="3" height="200" fill="#111d30" rx="1"/>
+          <text x="40" y="88" fill="#1a2d45" font-size="11" font-family="sans-serif">VILA MARIANA</text>
+          <text x="340" y="80" fill="#1a2d45" font-size="11" font-family="sans-serif">SAÚDE</text>
+          <text x="30" y="155" fill="#1a2d45" font-size="11" font-family="sans-serif">MOEMA</text>
+          <circle cx="240" cy="105" r="60" fill="rgba(37,99,235,.05)" stroke="rgba(37,99,235,.15)" stroke-width="1"/>
+          <circle cx="200" cy="95" r="7" fill="rgba(34,197,94,.2)" stroke="#22c55e" stroke-width="1.5"/><circle cx="200" cy="95" r="3" fill="#22c55e"/>
+          <circle cx="280" cy="80" r="7" fill="rgba(239,68,68,.2)" stroke="#ef4444" stroke-width="1.5"/><circle cx="280" cy="80" r="3" fill="#ef4444"/>
+          <circle cx="160" cy="120" r="7" fill="rgba(245,158,11,.2)" stroke="#f59e0b" stroke-width="1.5"/><circle cx="160" cy="120" r="3" fill="#f59e0b"/>
+          <circle cx="330" cy="115" r="7" fill="rgba(34,197,94,.2)" stroke="#22c55e" stroke-width="1.5"/><circle cx="330" cy="115" r="3" fill="#22c55e"/>
+        </svg>
+        <div style="position:absolute;bottom:8px;left:8px;display:flex;gap:8px;background:rgba(6,10,20,.8);border-radius:6px;padding:5px 10px;border:0.5px solid var(--border)">
+          <span style="font-size:9px;color:var(--txt3);display:flex;align-items:center;gap:4px"><span style="width:7px;height:7px;border-radius:50%;background:#22c55e;display:inline-block"></span>Disponível</span>
+          <span style="font-size:9px;color:var(--txt3);display:flex;align-items:center;gap:4px"><span style="width:7px;height:7px;border-radius:50%;background:#f59e0b;display:inline-block"></span>A caminho</span>
+          <span style="font-size:9px;color:var(--txt3);display:flex;align-items:center;gap:4px"><span style="width:7px;height:7px;border-radius:50%;background:#ef4444;display:inline-block"></span>Em atend.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHAMADOS EM ANDAMENTO -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">📋 Chamados em andamento</span>
+        <span class="see-all" onclick="setPage('chamados')">ver todos</span>
+      </div>
+      <div id="calls-list">
+        <div class="loading">Carregando chamados...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PARCEIROS -->
+  <div class="card section">
+    <div class="card-header">
+      <span class="card-title">👥 Parceiros</span>
+      <span class="see-all" onclick="setPage('parceiros')">ver todos</span>
+    </div>
+    <div id="partners-list">
+      <div class="loading">Carregando parceiros...</div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NOVO CHAMADO -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">🔔 Criar novo chamado</span>
+      <span class="modal-close" onclick="closeModal()">✕</span>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">NOME DO CLIENTE</label>
+        <input class="form-input" id="f-nome" placeholder="Ex: João da Silva"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">TELEFONE</label>
+        <input class="form-input" id="f-tel" placeholder="(11) 99999-0000"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">ENDEREÇO COMPLETO</label>
+        <input class="form-input" id="f-end" placeholder="Rua, número, bairro"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">TIPO DE OCORRÊNCIA</label>
+        <select class="form-select" id="f-tipo">
+          <option>Pia entupida</option>
+          <option>Vaso sanitário entupido</option>
+          <option>Ralo entupido</option>
+          <option>Esgoto</option>
+          <option>Cano estourado</option>
+          <option>Caixa de gordura</option>
+          <option>Desentupimento geral</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">URGÊNCIA</label>
+        <select class="form-select" id="f-urgencia">
+          <option value="alta">Alta — Vazando agora</option>
+          <option value="media" selected>Média — Pode esperar</option>
+          <option value="baixa">Baixa — Agendamento</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">OBSERVAÇÕES</label>
+        <input class="form-input" id="f-obs" placeholder="Detalhes adicionais..."/>
+      </div>
+      <button class="btn-primary" id="btn-disparar" onclick="dispararChamado()">
+        🚀 DISPARAR CHAMADO
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Config ─────────────────────────────────────────────────────────────────────
+// Troque pela URL do seu backend no Render após o deploy
+const API_URL = window.location.hostname === 'localhost'
+  ? 'http://localhost:5000'
+  : 'https://SEU-BACKEND.onrender.com';
+
+// ── Estado ─────────────────────────────────────────────────────────────────────
+let calls = [], partners = [];
+
+// ── Navegação ──────────────────────────────────────────────────────────────────
+function setPage(page) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.getElementById('page-title').textContent =
+    {dashboard:'Dashboard',chamados:'Chamados',parceiros:'Parceiros',mapa:'Mapa'}[page];
+}
+
+// ── Modal ──────────────────────────────────────────────────────────────────────
+function openModal() { document.getElementById('modal').classList.add('open'); }
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+// ── Disparar chamado ───────────────────────────────────────────────────────────
+async function dispararChamado() {
+  const nome     = document.getElementById('f-nome').value.trim();
+  const tel      = document.getElementById('f-tel').value.trim();
+  const end      = document.getElementById('f-end').value.trim();
+  const tipo     = document.getElementById('f-tipo').value;
+  const urgencia = document.getElementById('f-urgencia').value;
+  const obs      = document.getElementById('f-obs').value.trim();
+
+  if (!nome || !tel || !end) {
+    alert('Preencha nome, telefone e endereço.');
+    return;
+  }
+
+  const btn = document.getElementById('btn-disparar');
+  btn.disabled = true;
+  btn.textContent = 'Disparando...';
+
+  try {
+    const res = await fetch(`${API_URL}/api/calls`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        clientName:  nome,
+        clientPhone: tel,
+        address:     end,
+        description: tipo + (obs ? ' — ' + obs : ''),
+        urgency:     urgencia,
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      closeModal();
+      showToast('✅ Chamado disparado! Parceiros notificados.');
+      ['f-nome','f-tel','f-end','f-obs'].forEach(id => document.getElementById(id).value = '');
+      loadData();
+    } else {
+      alert('Erro: ' + (data.error || 'Tente novamente.'));
+    }
+  } catch(e) {
+    alert('Erro de conexão com o backend. Verifique a URL da API.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🚀 DISPARAR CHAMADO';
+  }
+}
+
+// ── Carregar dados ─────────────────────────────────────────────────────────────
+async function loadData() {
+  try {
+    const [callsRes, partnersRes] = await Promise.all([
+      fetch(`${API_URL}/api/calls`),
+      fetch(`${API_URL}/api/partners`)
+    ]);
+    const callsData    = await callsRes.json();
+    const partnersData = await partnersRes.json();
+    calls    = callsData.calls    || [];
+    partners = partnersData.partners || [];
+    renderMetrics();
+    renderCalls();
+    renderPartners();
+  } catch(e) {
+    console.error('Erro ao carregar dados:', e);
+  }
+}
+
+function renderMetrics() {
+  const hoje     = calls.length;
+  const andamento= calls.filter(c => ['accepted','in_service','on_the_way'].includes(c.status)).length;
+  const conc     = calls.filter(c => c.status === 'completed').length;
+  const online   = partners.filter(p => p.status !== 'offline').length;
+  document.getElementById('m-hoje').textContent     = hoje;
+  document.getElementById('m-andamento').textContent = andamento;
+  document.getElementById('m-conc').textContent     = conc;
+  document.getElementById('m-online').textContent   = online;
+}
+
+const STATUS_LABEL = {
+  pending:'Aguardando', dispatched:'Despachado',
+  accepted:'Aceito', on_the_way:'A caminho',
+  in_service:'Em atend.', completed:'Concluído', cancelled:'Cancelado'
+};
+const STATUS_TAG = {
+  pending:'tag-amber', dispatched:'tag-blue', accepted:'tag-blue',
+  on_the_way:'tag-amber', in_service:'tag-orange', completed:'tag-green', cancelled:'tag-red'
+};
+const AV_COLORS = [
+  ['rgba(37,99,235,.15)','#3b82f6'],['rgba(34,197,94,.1)','#22c55e'],
+  ['rgba(249,115,22,.12)','#f97316'],['rgba(239,68,68,.12)','#ef4444'],
+];
+
+function renderCalls() {
+  const el = document.getElementById('calls-list');
+  const active = calls.filter(c => !['completed','cancelled'].includes(c.status)).slice(0,6);
+  if (!active.length) { el.innerHTML = '<div class="empty">Nenhum chamado ativo</div>'; return; }
+  el.innerHTML = active.map((c,i) => {
+    const [bg,col] = AV_COLORS[i % AV_COLORS.length];
+    const initials = (c.clientName||'?').split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+    const time = c.createdAt ? new Date(c.createdAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : '';
+    return `<div class="call-item">
+      <div class="call-av" style="background:${bg};color:${col}">${initials}</div>
+      <div class="call-info">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span class="call-name">${c.clientName||'Cliente'}</span>
+          <span class="tag ${STATUS_TAG[c.status]||'tag-blue'}">${STATUS_LABEL[c.status]||c.status}</span>
+        </div>
+        <div class="call-addr">${c.address||''}</div>
+        <div class="call-meta">
+          <span class="call-partner">${c.assignedPartnerId ? 'Parceiro: '+c.assignedPartnerId.slice(0,6) : 'Aguardando parceiro'}</span>
+          <span class="call-time">${time}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+const P_STATUS = {available:'Disponível',on_the_way:'A caminho',in_service:'Em atend.',offline:'Offline'};
+const P_DOT    = {available:'#22c55e',on_the_way:'#f59e0b',in_service:'#ef4444',offline:'#475569'};
+
+function renderPartners() {
+  const el = document.getElementById('partners-list');
+  if (!partners.length) { el.innerHTML = '<div class="empty">Nenhum parceiro cadastrado</div>'; return; }
+  el.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1px;background:var(--border)">` +
+    partners.map(p => `
+      <div style="background:var(--bg3);padding:12px 14px;display:flex;align-items:center;gap:10px">
+        <div style="width:34px;height:34px;border-radius:50%;background:rgba(37,99,235,.15);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#3b82f6;flex-shrink:0">${p.avatarInitials||'?'}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:600;color:var(--txt)">${p.name||'Parceiro'}</div>
+          <div style="font-size:10px;color:var(--txt3);margin-top:1px">${p.phone||''}</div>
+          <div style="font-size:10px;color:#f59e0b;margin-top:1px">${'★'.repeat(Math.round(p.rating||5))} ${(p.rating||5).toFixed(1)}</div>
+        </div>
+        <div style="width:8px;height:8px;border-radius:50%;background:${P_DOT[p.status]||'#475569'};flex-shrink:0" title="${P_STATUS[p.status]||p.status}"></div>
+      </div>`).join('') + '</div>';
+}
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────────
+loadData();
+setInterval(loadData, 10000); // atualiza a cada 10 segundos
+</script>
+</body>
+</html>
