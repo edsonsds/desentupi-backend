@@ -3,410 +3,568 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Desentupi Pro — Painel Admin</title>
+<title>Admin do Site — Desentupi Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#060a14;--bg2:#0c1220;--bg3:#111827;--bg4:#1a2235;
-  --border:#1e2d45;--blue:#2563eb;--blue-l:#3b82f6;
-  --green:#22c55e;--red:#ef4444;--orange:#f97316;--amber:#f59e0b;
-  --txt:#f1f5f9;--txt2:#94a3b8;--txt3:#475569;
-}
-body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh}
-.sidebar{width:220px;background:var(--bg2);border-right:0.5px solid var(--border);position:fixed;top:0;left:0;bottom:0;display:flex;flex-direction:column}
-.logo{padding:18px 16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:10px}
-.logo-icon{width:32px;height:32px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
-.logo-text{font-size:13px;font-weight:700;color:var(--txt);letter-spacing:.5px}
-.logo-sub{font-size:9px;color:var(--blue-l);letter-spacing:1px;font-weight:600}
-nav{padding:8px 0;flex:1}
-.nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;font-size:12px;color:var(--txt3);transition:all .15s;border-left:2px solid transparent}
-.nav-item:hover{color:var(--txt);background:var(--bg3)}
-.nav-item.active{color:var(--blue-l);background:var(--bg3);border-left-color:var(--blue)}
-.nav-item .icon{font-size:16px}
-.sidebar-footer{padding:14px 16px;border-top:0.5px solid var(--border);font-size:11px;color:var(--txt3)}
-.main{margin-left:220px;padding:24px}
-.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
-.page-title{font-size:18px;font-weight:700;color:var(--txt);letter-spacing:-.3px}
-.live-badge{background:rgba(34,197,94,.1);border:0.5px solid rgba(34,197,94,.2);color:var(--green);font-size:10px;font-weight:600;padding:4px 10px;border-radius:20px;display:flex;align-items:center;gap:5px}
-.pulse{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 1.5s infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
-.metric{background:var(--bg3);border:0.5px solid var(--border);border-radius:14px;padding:16px}
-.metric-lbl{font-size:10px;color:var(--txt3);margin-bottom:8px;display:flex;align-items:center;gap:6px;font-weight:500;letter-spacing:.3px}
-.metric-val{font-size:28px;font-weight:700;color:var(--txt);letter-spacing:-1px}
-.metric-sub{font-size:10px;margin-top:4px;font-weight:500}
-.grid2{display:grid;grid-template-columns:1fr 360px;gap:16px;margin-bottom:20px}
-.card{background:var(--bg3);border:0.5px solid var(--border);border-radius:14px;overflow:hidden}
-.card-header{padding:12px 16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.card-title{font-size:12px;font-weight:600;color:var(--txt2);display:flex;align-items:center;gap:6px}
-.see-all{font-size:10px;color:var(--blue-l);cursor:pointer;font-weight:500}
-.call-item{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:0.5px solid var(--border);cursor:pointer;transition:background .12s}
-.call-item:hover{background:var(--bg4)}
-.call-item:last-child{border:none}
-.call-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
-.call-info{flex:1;min-width:0}
-.call-name{font-size:12px;font-weight:600;color:var(--txt)}
-.call-addr{font-size:10px;color:var(--txt3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
-.call-meta{display:flex;align-items:center;justify-content:space-between;margin-top:2px}
-.call-partner{font-size:10px;color:var(--txt3)}
-.call-time{font-size:9px;color:var(--txt4,#2d3f5a)}
-.tag{display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;font-size:9px;font-weight:600;letter-spacing:.2px}
-.tag-blue{background:rgba(37,99,235,.15);color:var(--blue-l);border:0.5px solid rgba(37,99,235,.3)}
-.tag-green{background:rgba(34,197,94,.12);color:var(--green);border:0.5px solid rgba(34,197,94,.25)}
-.tag-orange{background:rgba(249,115,22,.12);color:var(--orange);border:0.5px solid rgba(249,115,22,.25)}
-.tag-red{background:rgba(239,68,68,.12);color:var(--red);border:0.5px solid rgba(239,68,68,.25)}
-.tag-amber{background:rgba(245,158,11,.12);color:var(--amber);border:0.5px solid rgba(245,158,11,.25)}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:100}
-.modal-overlay.open{display:flex}
-.modal{background:var(--bg2);border:0.5px solid var(--blue);border-radius:16px;width:400px;overflow:hidden}
-.modal-header{background:var(--blue);padding:14px 16px;display:flex;align-items:center;justify-content:space-between}
-.modal-title{font-size:13px;font-weight:600;color:#fff;display:flex;align-items:center;gap:7px}
-.modal-close{color:rgba(255,255,255,.7);cursor:pointer;font-size:18px;line-height:1}
-.modal-body{padding:16px}
-.form-group{margin-bottom:12px}
-.form-label{font-size:10px;color:var(--txt3);margin-bottom:6px;display:block;font-weight:600;letter-spacing:.3px}
-.form-input{width:100%;background:var(--bg);border:0.5px solid var(--border);border-radius:8px;padding:9px 11px;font-size:12px;color:var(--txt);outline:none;font-family:inherit}
-.form-input:focus{border-color:var(--blue)}
-.form-select{width:100%;background:var(--bg);border:0.5px solid var(--border);border-radius:8px;padding:9px 11px;font-size:12px;color:var(--txt);outline:none;font-family:inherit}
-.btn-primary{width:100%;background:var(--blue);color:#fff;border:none;padding:11px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;font-family:inherit;transition:opacity .15s}
-.btn-primary:hover{opacity:.9}
-.btn-primary:disabled{opacity:.6;cursor:not-allowed}
-.new-call-btn{background:var(--blue);color:#fff;border:none;padding:8px 14px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit}
-.toast{position:fixed;bottom:24px;right:24px;background:var(--bg3);border:0.5px solid var(--green);border-radius:10px;padding:12px 16px;color:var(--green);font-size:12px;font-weight:500;z-index:200;animation:slideUp .3s ease;display:flex;align-items:center;gap:8px}
-@keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.map-area{height:200px;background:var(--bg2);position:relative;overflow:hidden}
-.empty{padding:32px;text-align:center;color:var(--txt3);font-size:12px}
-.loading{padding:20px;text-align:center;color:var(--txt3);font-size:11px}
-.section{margin-bottom:20px}
+:root{--bg:#020812;--bg2:#060d1a;--bg3:#0a1628;--border:#0d2040;--border2:#1a3a60;--blue:#2563eb;--blue-l:#3b82f6;--cyan:#22d3ee;--green:#22c55e;--red:#ef4444;--amber:#f59e0b;--purple:#a855f7;--txt:#e2e8f0;--txt2:#94a3b8;--txt3:#64748b}
+body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;min-height:100vh;padding:20px}
+.container{max-width:920px;margin:0 auto}
+
+/* Login Screen */
+.login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px}
+.login-card{background:linear-gradient(135deg,var(--bg3),var(--bg2));border:1px solid var(--border2);border-radius:20px;padding:40px;max-width:400px;width:100%;box-shadow:0 32px 64px rgba(0,0,0,0.5)}
+.login-logo{width:60px;height:60px;background:linear-gradient(135deg,var(--blue),var(--cyan));border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 20px;box-shadow:0 0 24px rgba(59,130,246,0.4)}
+.login-title{font-size:22px;font-weight:800;text-align:center;margin-bottom:6px;color:var(--txt)}
+.login-sub{font-size:13px;color:var(--txt3);text-align:center;margin-bottom:28px}
+.login-input{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:12px;padding:14px 16px;font-size:14px;color:var(--txt);outline:none;font-family:inherit;margin-bottom:14px;transition:border-color 0.2s}
+.login-input:focus{border-color:var(--blue-l)}
+.login-btn{width:100%;background:linear-gradient(135deg,var(--blue),var(--cyan));color:#fff;border:none;padding:14px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.2s;box-shadow:0 6px 16px rgba(59,130,246,0.3)}
+.login-btn:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(59,130,246,0.4)}
+.login-error{color:var(--red);font-size:12px;margin-top:10px;text-align:center;display:none}
+
+.header{background:linear-gradient(135deg,var(--bg3),var(--bg2));border:1px solid var(--border2);border-radius:16px;padding:24px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
+.title-area h1{font-size:22px;font-weight:800;background:linear-gradient(135deg,var(--blue-l),var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:4px}
+.title-area .sub{font-size:12px;color:var(--txt3);font-weight:500}
+.btn-save{background:linear-gradient(135deg,var(--green),#16a34a);color:#fff;border:none;padding:12px 24px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:8px;box-shadow:0 4px 14px rgba(34,197,94,0.3)}
+.btn-save:hover{transform:translateY(-1px)}
+.btn-save:disabled{opacity:0.6;cursor:not-allowed}
+.btn-preview{background:rgba(37,99,235,0.1);color:var(--blue-l);border:1px solid rgba(37,99,235,0.3);padding:12px 20px;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none}
+.btn-logout{background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.3);padding:8px 14px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit}
+
+.tabs{display:flex;gap:4px;background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:5px;margin-bottom:20px;overflow-x:auto}
+.tab{flex:1;min-width:max-content;padding:10px 16px;border-radius:9px;font-size:12px;font-weight:600;color:var(--txt3);cursor:pointer;border:none;background:transparent;font-family:inherit;white-space:nowrap}
+.tab.active{background:var(--blue);color:#fff;box-shadow:0 4px 12px rgba(37,99,235,0.3)}
+
+.section{background:linear-gradient(135deg,var(--bg3),var(--bg2));border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px;display:none}
+.section.active{display:block}
+.section-title{font-size:14px;font-weight:700;color:var(--blue-l);letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.section-desc{font-size:12px;color:var(--txt3);margin-bottom:20px}
+
+.field{margin-bottom:16px}
+.field-label{font-size:10px;font-weight:700;color:var(--txt3);letter-spacing:0.6px;text-transform:uppercase;margin-bottom:6px;display:block}
+.field-input,.field-textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--txt);outline:none;font-family:inherit}
+.field-input:focus,.field-textarea:focus{border-color:var(--blue)}
+.field-textarea{resize:vertical;min-height:90px;line-height:1.5}
+.field-hint{font-size:10px;color:var(--txt3);margin-top:4px}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+
+.item-card{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;position:relative}
+.item-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.item-num{background:rgba(37,99,235,0.15);color:var(--blue-l);font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:0.5px}
+.btn-remove{background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.25);padding:5px 10px;border-radius:8px;font-size:10px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-add{width:100%;background:rgba(37,99,235,0.08);color:var(--blue-l);border:1px dashed rgba(37,99,235,0.3);padding:14px;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:8px}
+
+/* ── Image Upload Component ── */
+.img-upload-wrap{position:relative;border:2px dashed var(--border2);border-radius:14px;overflow:hidden;background:var(--bg);transition:all 0.2s;margin-bottom:8px;min-height:160px}
+.img-upload-wrap:hover{border-color:var(--blue-l)}
+.img-upload-wrap.has-image{border-style:solid;border-color:var(--border)}
+.img-upload-preview{width:100%;height:180px;background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative}
+.img-upload-empty{flex-direction:column;gap:8px;padding:24px;text-align:center}
+.img-upload-icon{font-size:32px;opacity:0.5}
+.img-upload-text{font-size:13px;color:var(--txt2);font-weight:600}
+.img-upload-hint{font-size:11px;color:var(--txt3)}
+.img-upload-overlay{position:absolute;inset:0;background:rgba(0,5,16,0.85);display:none;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:#fff;font-size:13px;font-weight:600;cursor:pointer}
+.img-upload-wrap.has-image:hover .img-upload-overlay{display:flex}
+.img-upload-input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.img-upload-loading{position:absolute;inset:0;background:rgba(2,8,18,0.9);display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;z-index:2}
+.img-upload-loading.active{display:flex}
+.spinner{width:36px;height:36px;border:3px solid rgba(59,130,246,0.2);border-top-color:var(--blue-l);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.img-upload-progress{font-size:12px;color:var(--blue-l);font-weight:600}
+.img-actions{display:flex;gap:8px;margin-top:8px}
+.btn-img-action{flex:1;background:var(--bg);border:1px solid var(--border);color:var(--txt2);padding:8px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:5px}
+.btn-img-action:hover{border-color:var(--border2);color:var(--txt)}
+.btn-img-action.delete{color:var(--red);border-color:rgba(239,68,68,0.3)}
+.url-input-wrap{margin-top:8px;display:none}
+.url-input-wrap.show{display:block}
+
+.toast{position:fixed;top:24px;right:24px;background:linear-gradient(135deg,var(--bg3),var(--bg2));border:1px solid var(--green);border-radius:12px;padding:14px 20px;color:var(--green);font-size:13px;font-weight:600;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,0.5)}
+.toast.error{border-color:var(--red);color:var(--red)}
+
+.preview-banner{background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);color:var(--green);padding:12px 16px;border-radius:10px;font-size:12px;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+
+@media(max-width:768px){.grid-2,.grid-3{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
-<div class="sidebar">
-  <div class="logo">
-    <div class="logo-icon">🔧</div>
-    <div><div class="logo-text">DESENTUPI PRO</div><div class="logo-sub">ADMIN</div></div>
-  </div>
-  <nav>
-    <div class="nav-item active" onclick="setPage('dashboard')"><span class="icon">📊</span> Dashboard</div>
-    <div class="nav-item" onclick="setPage('chamados')"><span class="icon">🔔</span> Chamados</div>
-    <div class="nav-item" onclick="setPage('parceiros')"><span class="icon">👥</span> Parceiros</div>
-    <div class="nav-item" onclick="setPage('mapa')"><span class="icon">🗺️</span> Mapa</div>
-  </nav>
-  <div class="sidebar-footer">
-    <div style="font-size:10px;color:var(--txt3)">Conectado ao Firebase</div>
-    <div style="font-size:11px;color:var(--txt2);margin-top:2px;font-weight:500">Edson — Admin</div>
+<!-- LOGIN SCREEN -->
+<div class="login-screen" id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">⚡</div>
+    <div class="login-title">Admin do Site</div>
+    <div class="login-sub">Faça login para gerenciar</div>
+    <input type="password" id="login-password" class="login-input" placeholder="Digite a senha" onkeydown="if(event.key==='Enter')fazerLogin()"/>
+    <button class="login-btn" onclick="fazerLogin()">Entrar</button>
+    <div class="login-error" id="login-error">Senha incorreta</div>
   </div>
 </div>
 
-<div class="main">
-  <div class="topbar">
-    <div class="page-title" id="page-title">Dashboard</div>
-    <div style="display:flex;align-items:center;gap:10px">
-      <div class="live-badge"><div class="pulse"></div> Ao vivo</div>
-      <button class="new-call-btn" onclick="openModal()">＋ Novo chamado</button>
+<div class="container" id="main-app" style="display:none">
+  <div class="header">
+    <div class="title-area">
+      <h1>⚙️ Admin do Site</h1>
+      <div class="sub">Edite uma vez aqui — todas as 200 páginas atualizam automaticamente</div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <a href="template-bairro.html?b=mooca" target="_blank" class="btn-preview">👁️ Ver site</a>
+      <button class="btn-save" onclick="salvar()" id="btn-save">💾 Salvar</button>
+      <button class="btn-logout" onclick="fazerLogout()">Sair</button>
     </div>
   </div>
 
-  <!-- METRICS -->
-  <div class="metrics">
-    <div class="metric">
-      <div class="metric-lbl">🔔 Chamados hoje</div>
-      <div class="metric-val" id="m-hoje">0</div>
-      <div class="metric-sub" style="color:var(--orange)">Carregando...</div>
+  <div class="preview-banner">
+    <span>✨</span>
+    <span>Suas alterações refletem em <strong>todas as 200 páginas</strong> dos bairros instantaneamente.</span>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('contato',this)">📞 Contato</button>
+    <button class="tab" onclick="showTab('marca',this)">🏷️ Marca</button>
+    <button class="tab" onclick="showTab('imagens',this)">🖼️ Imagens</button>
+    <button class="tab" onclick="showTab('textos',this)">📝 Textos</button>
+    <button class="tab" onclick="showTab('servicos',this)">🔧 Serviços</button>
+    <button class="tab" onclick="showTab('equipamentos',this)">⚙️ Equipamentos</button>
+    <button class="tab" onclick="showTab('depoimentos',this)">⭐ Depoimentos</button>
+    <button class="tab" onclick="showTab('faq',this)">❓ FAQ</button>
+  </div>
+
+  <div class="section active" id="sec-contato">
+    <div class="section-title">📞 Informações de contato</div>
+    <div class="grid-2">
+      <div class="field">
+        <label class="field-label">Telefone (exibido)</label>
+        <input class="field-input" id="phone" placeholder="(11) 99999-9999"/>
+      </div>
+      <div class="field">
+        <label class="field-label">WhatsApp (números)</label>
+        <input class="field-input" id="phoneRaw" placeholder="5511999999999"/>
+        <div class="field-hint">Com código do país e DDD, sem espaços</div>
+      </div>
     </div>
-    <div class="metric">
-      <div class="metric-lbl">⚡ Em andamento</div>
-      <div class="metric-val" id="m-andamento">0</div>
-      <div class="metric-sub" style="color:var(--amber)">Agora</div>
-    </div>
-    <div class="metric">
-      <div class="metric-lbl">✅ Concluídos</div>
-      <div class="metric-val" id="m-conc">0</div>
-      <div class="metric-sub" style="color:var(--green)">Hoje</div>
-    </div>
-    <div class="metric">
-      <div class="metric-lbl">🟢 Parceiros online</div>
-      <div class="metric-val" id="m-online">0</div>
-      <div class="metric-sub" style="color:var(--blue-l)">Disponíveis</div>
+    <div class="field">
+      <label class="field-label">Email</label>
+      <input class="field-input" id="email" placeholder="contato@desentupipro.com.br"/>
     </div>
   </div>
 
-  <div class="grid2">
-    <!-- MAPA -->
-    <div class="card">
-      <div class="card-header">
-        <span class="card-title">🗺️ Mapa em tempo real</span>
-        <span class="tag tag-green" style="font-size:9px">● Ao vivo</span>
-      </div>
-      <div class="map-area" id="map-area">
-        <svg width="100%" height="100%" viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
-          <rect width="500" height="200" fill="#080e1a"/>
-          <defs><pattern id="g" width="30" height="30" patternUnits="userSpaceOnUse"><path d="M30 0L0 0 0 30" fill="none" stroke="#111d2f" stroke-width="1"/></pattern></defs>
-          <rect width="500" height="200" fill="url(#g)"/>
-          <rect x="0" y="95" width="500" height="4" fill="#111d30" rx="2"/>
-          <rect x="150" y="0" width="4" height="200" fill="#111d30" rx="2"/>
-          <rect x="320" y="0" width="3" height="200" fill="#111d30" rx="1"/>
-          <text x="40" y="88" fill="#1a2d45" font-size="11" font-family="sans-serif">VILA MARIANA</text>
-          <text x="340" y="80" fill="#1a2d45" font-size="11" font-family="sans-serif">SAÚDE</text>
-          <text x="30" y="155" fill="#1a2d45" font-size="11" font-family="sans-serif">MOEMA</text>
-          <circle cx="240" cy="105" r="60" fill="rgba(37,99,235,.05)" stroke="rgba(37,99,235,.15)" stroke-width="1"/>
-          <circle cx="200" cy="95" r="7" fill="rgba(34,197,94,.2)" stroke="#22c55e" stroke-width="1.5"/><circle cx="200" cy="95" r="3" fill="#22c55e"/>
-          <circle cx="280" cy="80" r="7" fill="rgba(239,68,68,.2)" stroke="#ef4444" stroke-width="1.5"/><circle cx="280" cy="80" r="3" fill="#ef4444"/>
-          <circle cx="160" cy="120" r="7" fill="rgba(245,158,11,.2)" stroke="#f59e0b" stroke-width="1.5"/><circle cx="160" cy="120" r="3" fill="#f59e0b"/>
-          <circle cx="330" cy="115" r="7" fill="rgba(34,197,94,.2)" stroke="#22c55e" stroke-width="1.5"/><circle cx="330" cy="115" r="3" fill="#22c55e"/>
-        </svg>
-        <div style="position:absolute;bottom:8px;left:8px;display:flex;gap:8px;background:rgba(6,10,20,.8);border-radius:6px;padding:5px 10px;border:0.5px solid var(--border)">
-          <span style="font-size:9px;color:var(--txt3);display:flex;align-items:center;gap:4px"><span style="width:7px;height:7px;border-radius:50%;background:#22c55e;display:inline-block"></span>Disponível</span>
-          <span style="font-size:9px;color:var(--txt3);display:flex;align-items:center;gap:4px"><span style="width:7px;height:7px;border-radius:50%;background:#f59e0b;display:inline-block"></span>A caminho</span>
-          <span style="font-size:9px;color:var(--txt3);display:flex;align-items:center;gap:4px"><span style="width:7px;height:7px;border-radius:50%;background:#ef4444;display:inline-block"></span>Em atend.</span>
-        </div>
-      </div>
+  <div class="section" id="sec-marca">
+    <div class="section-title">🏷️ Identidade da marca</div>
+    <div class="grid-2">
+      <div class="field"><label class="field-label">Nome da marca</label><input class="field-input" id="brandName"/></div>
+      <div class="field"><label class="field-label">CNPJ</label><input class="field-input" id="cnpj"/></div>
     </div>
-
-    <!-- CHAMADOS EM ANDAMENTO -->
-    <div class="card">
-      <div class="card-header">
-        <span class="card-title">📋 Chamados em andamento</span>
-        <span class="see-all" onclick="setPage('chamados')">ver todos</span>
-      </div>
-      <div id="calls-list">
-        <div class="loading">Carregando chamados...</div>
-      </div>
+    <div class="grid-3">
+      <div class="field"><label class="field-label">Anos no mercado</label><input class="field-input" id="anos"/></div>
+      <div class="field"><label class="field-label">Atendimentos</label><input class="field-input" id="atendimentos"/></div>
+      <div class="field"><label class="field-label">Avaliação</label><input class="field-input" id="ratingVal"/></div>
     </div>
   </div>
 
-  <!-- PARCEIROS -->
-  <div class="card section">
-    <div class="card-header">
-      <span class="card-title">👥 Parceiros</span>
-      <span class="see-all" onclick="setPage('parceiros')">ver todos</span>
+  <div class="section" id="sec-imagens">
+    <div class="section-title">🖼️ Imagens principais</div>
+    <div class="section-desc">Clique no quadro pra escolher a foto do seu computador — ela sobe automaticamente.</div>
+
+    <div class="field">
+      <label class="field-label">Imagem do Hero (fundo principal)</label>
+      <div id="upload-heroImage"></div>
+      <div class="field-hint">Recomendação: 1600x900px. Foto profissional com técnico ou caminhão.</div>
     </div>
-    <div id="partners-list">
-      <div class="loading">Carregando parceiros...</div>
+
+    <div class="field">
+      <label class="field-label">Imagem da seção "Sobre nós"</label>
+      <div id="upload-aboutImage"></div>
+      <div class="field-hint">Recomendação: 900x675px. Foto da equipe ou serviço em ação.</div>
     </div>
   </div>
-</div>
 
-<!-- MODAL NOVO CHAMADO -->
-<div class="modal-overlay" id="modal">
-  <div class="modal">
-    <div class="modal-header">
-      <span class="modal-title">🔔 Criar novo chamado</span>
-      <span class="modal-close" onclick="closeModal()">✕</span>
+  <div class="section" id="sec-textos">
+    <div class="section-title">📝 Textos institucionais</div>
+    <div class="field">
+      <label class="field-label">Texto da seção "Sobre nós"</label>
+      <textarea class="field-textarea" id="aboutText"></textarea>
     </div>
-    <div class="modal-body">
-      <div class="form-group">
-        <label class="form-label">NOME DO CLIENTE</label>
-        <input class="form-input" id="f-nome" placeholder="Ex: João da Silva"/>
-      </div>
-      <div class="form-group">
-        <label class="form-label">TELEFONE</label>
-        <input class="form-input" id="f-tel" placeholder="(11) 99999-0000"/>
-      </div>
-      <div class="form-group">
-        <label class="form-label">ENDEREÇO COMPLETO</label>
-        <input class="form-input" id="f-end" placeholder="Rua, número, bairro"/>
-      </div>
-      <div class="form-group">
-        <label class="form-label">TIPO DE OCORRÊNCIA</label>
-        <select class="form-select" id="f-tipo">
-          <option>Pia entupida</option>
-          <option>Vaso sanitário entupido</option>
-          <option>Ralo entupido</option>
-          <option>Esgoto</option>
-          <option>Cano estourado</option>
-          <option>Caixa de gordura</option>
-          <option>Desentupimento geral</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">URGÊNCIA</label>
-        <select class="form-select" id="f-urgencia">
-          <option value="alta">Alta — Vazando agora</option>
-          <option value="media" selected>Média — Pode esperar</option>
-          <option value="baixa">Baixa — Agendamento</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">OBSERVAÇÕES</label>
-        <input class="form-input" id="f-obs" placeholder="Detalhes adicionais..."/>
-      </div>
-      <button class="btn-primary" id="btn-disparar" onclick="dispararChamado()">
-        🚀 DISPARAR CHAMADO
-      </button>
-    </div>
+  </div>
+
+  <div class="section" id="sec-servicos">
+    <div class="section-title">🔧 Serviços oferecidos</div>
+    <div id="services-list"></div>
+    <button class="btn-add" onclick="addService()">+ Adicionar serviço</button>
+  </div>
+
+  <div class="section" id="sec-equipamentos">
+    <div class="section-title">⚙️ Equipamentos profissionais</div>
+    <div id="equipments-list"></div>
+    <button class="btn-add" onclick="addEquipment()">+ Adicionar equipamento</button>
+  </div>
+
+  <div class="section" id="sec-depoimentos">
+    <div class="section-title">⭐ Depoimentos de clientes</div>
+    <div id="testimonials-list"></div>
+    <button class="btn-add" onclick="addTestimonial()">+ Adicionar depoimento</button>
+  </div>
+
+  <div class="section" id="sec-faq">
+    <div class="section-title">❓ Perguntas frequentes</div>
+    <div id="faqs-list"></div>
+    <button class="btn-add" onclick="addFaq()">+ Adicionar pergunta</button>
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script>
-// ── Config ─────────────────────────────────────────────────────────────────────
-// Troque pela URL do seu backend no Render após o deploy
-const API_URL = window.location.hostname === 'localhost'
-  ? 'http://localhost:5000'
-  : 'https://SEU-BACKEND.onrender.com';
+const firebaseConfig = {apiKey:'AIzaSyCuUTCvw0Hwyzj0xgQ7a1Tr_4BzTDjsQqk',authDomain:'desentupi-pro-9f5bf.firebaseapp.com',projectId:'desentupi-pro-9f5bf',storageBucket:'desentupi-pro-9f5bf.firebasestorage.app',messagingSenderId:'408192553328',appId:'1:408192553328:android:b560491f69bd7e63e93fb5'};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-// ── Estado ─────────────────────────────────────────────────────────────────────
-let calls = [], partners = [];
+// ── ImgBB FREE API key (público, sem limite por uso) ──
+const IMGBB_API_KEY = '26dcb6efe44bb64bb36b16a5046ce628';
+const ADMIN_PASSWORD = 'desentupi2026';
 
-// ── Navegação ──────────────────────────────────────────────────────────────────
-function setPage(page) {
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  event.currentTarget.classList.add('active');
-  document.getElementById('page-title').textContent =
-    {dashboard:'Dashboard',chamados:'Chamados',parceiros:'Parceiros',mapa:'Mapa'}[page];
+let dados = {};
+
+// ── LOGIN ──
+function fazerLogin(){
+  const pwd = document.getElementById('login-password').value;
+  if (pwd === ADMIN_PASSWORD){
+    sessionStorage.setItem('admin-auth', 'ok');
+    mostrarApp();
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+  }
 }
 
-// ── Modal ──────────────────────────────────────────────────────────────────────
-function openModal() { document.getElementById('modal').classList.add('open'); }
-function closeModal() { document.getElementById('modal').classList.remove('open'); }
+function fazerLogout(){
+  sessionStorage.removeItem('admin-auth');
+  location.reload();
+}
 
-// ── Disparar chamado ───────────────────────────────────────────────────────────
-async function dispararChamado() {
-  const nome     = document.getElementById('f-nome').value.trim();
-  const tel      = document.getElementById('f-tel').value.trim();
-  const end      = document.getElementById('f-end').value.trim();
-  const tipo     = document.getElementById('f-tipo').value;
-  const urgencia = document.getElementById('f-urgencia').value;
-  const obs      = document.getElementById('f-obs').value.trim();
+function mostrarApp(){
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('main-app').style.display = 'block';
+  carregar();
+}
 
-  if (!nome || !tel || !end) {
-    alert('Preencha nome, telefone e endereço.');
-    return;
+if (sessionStorage.getItem('admin-auth') === 'ok'){
+  mostrarApp();
+}
+
+function showTab(name, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-' + name).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ── UPLOAD DE IMAGENS ──
+async function uploadImageToImgBB(file) {
+  const formData = new FormData();
+  formData.append('image', file);
+  const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+    method: 'POST',
+    body: formData
+  });
+  const data = await res.json();
+  if (data.success) return data.data.url;
+  throw new Error('Upload falhou');
+}
+
+// Cria componente de upload visual
+function createImageUploader(key, currentUrl, onChange) {
+  const wrap = document.createElement('div');
+  wrap.className = 'img-upload-wrap' + (currentUrl ? ' has-image' : '');
+
+  const preview = document.createElement('div');
+  preview.className = 'img-upload-preview';
+  if (currentUrl) {
+    preview.style.backgroundImage = `url('${currentUrl}')`;
+  } else {
+    preview.classList.add('img-upload-empty');
+    preview.innerHTML = `
+      <div class="img-upload-icon">🖼️</div>
+      <div class="img-upload-text">Clique para escolher uma imagem</div>
+      <div class="img-upload-hint">JPG, PNG ou WEBP — até 32MB</div>
+    `;
   }
 
-  const btn = document.getElementById('btn-disparar');
-  btn.disabled = true;
-  btn.textContent = 'Disparando...';
+  const overlay = document.createElement('div');
+  overlay.className = 'img-upload-overlay';
+  overlay.innerHTML = '<div style="font-size:24px">📤</div><div>Trocar imagem</div>';
 
-  try {
-    const res = await fetch(`${API_URL}/api/calls`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        clientName:  nome,
-        clientPhone: tel,
-        address:     end,
-        description: tipo + (obs ? ' — ' + obs : ''),
-        urgency:     urgencia,
-      })
-    });
-    const data = await res.json();
-    if (data.success) {
-      closeModal();
-      showToast('✅ Chamado disparado! Parceiros notificados.');
-      ['f-nome','f-tel','f-end','f-obs'].forEach(id => document.getElementById(id).value = '');
-      loadData();
-    } else {
-      alert('Erro: ' + (data.error || 'Tente novamente.'));
+  const loading = document.createElement('div');
+  loading.className = 'img-upload-loading';
+  loading.innerHTML = '<div class="spinner"></div><div class="img-upload-progress">Subindo imagem...</div>';
+
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.className = 'img-upload-input';
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    loading.classList.add('active');
+    try {
+      const url = await uploadImageToImgBB(file);
+      preview.style.backgroundImage = `url('${url}')`;
+      preview.classList.remove('img-upload-empty');
+      preview.innerHTML = '';
+      wrap.classList.add('has-image');
+      onChange(url);
+      showToast('✅ Imagem enviada!');
+    } catch (err) {
+      showToast('❌ Erro ao enviar imagem. Tente outra.', true);
+    } finally {
+      loading.classList.remove('active');
+      input.value = '';
     }
-  } catch(e) {
-    alert('Erro de conexão com o backend. Verifique a URL da API.');
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '🚀 DISPARAR CHAMADO';
-  }
+  };
+
+  preview.appendChild(overlay);
+  wrap.appendChild(preview);
+  wrap.appendChild(loading);
+  wrap.appendChild(input);
+
+  // Botões de ação
+  const actions = document.createElement('div');
+  actions.className = 'img-actions';
+
+  const btnUrl = document.createElement('button');
+  btnUrl.className = 'btn-img-action';
+  btnUrl.innerHTML = '🔗 Colar URL';
+  btnUrl.onclick = (e) => {
+    e.stopPropagation();
+    const urlWrap = wrap.parentElement.querySelector('.url-input-wrap');
+    if (urlWrap) urlWrap.classList.toggle('show');
+  };
+
+  const btnDelete = document.createElement('button');
+  btnDelete.className = 'btn-img-action delete';
+  btnDelete.innerHTML = '🗑️ Remover';
+  btnDelete.onclick = (e) => {
+    e.stopPropagation();
+    preview.style.backgroundImage = '';
+    preview.classList.add('img-upload-empty');
+    preview.innerHTML = '<div class="img-upload-icon">🖼️</div><div class="img-upload-text">Clique para escolher uma imagem</div>';
+    preview.appendChild(overlay);
+    wrap.classList.remove('has-image');
+    onChange('');
+  };
+
+  actions.appendChild(btnUrl);
+  actions.appendChild(btnDelete);
+
+  const urlWrap = document.createElement('div');
+  urlWrap.className = 'url-input-wrap';
+  const urlInput = document.createElement('input');
+  urlInput.className = 'field-input';
+  urlInput.placeholder = 'Cole a URL aqui (https://...)';
+  urlInput.value = currentUrl || '';
+  urlInput.onchange = () => {
+    if (urlInput.value) {
+      preview.style.backgroundImage = `url('${urlInput.value}')`;
+      preview.classList.remove('img-upload-empty');
+      preview.innerHTML = '';
+      preview.appendChild(overlay);
+      wrap.classList.add('has-image');
+      onChange(urlInput.value);
+    }
+  };
+  urlWrap.appendChild(urlInput);
+
+  const container = document.createElement('div');
+  container.appendChild(wrap);
+  container.appendChild(actions);
+  container.appendChild(urlWrap);
+  return container;
 }
 
-// ── Carregar dados ─────────────────────────────────────────────────────────────
-async function loadData() {
-  try {
-    const [callsRes, partnersRes] = await Promise.all([
-      fetch(`${API_URL}/api/calls`),
-      fetch(`${API_URL}/api/partners`)
-    ]);
-    const callsData    = await callsRes.json();
-    const partnersData = await partnersRes.json();
-    calls    = callsData.calls    || [];
-    partners = partnersData.partners || [];
-    renderMetrics();
-    renderCalls();
-    renderPartners();
-  } catch(e) {
-    console.error('Erro ao carregar dados:', e);
-  }
+function renderImageUploader(elementId, key, currentUrl, onChange) {
+  const target = document.getElementById(elementId);
+  if (!target) return;
+  target.innerHTML = '';
+  target.appendChild(createImageUploader(key, currentUrl, onChange));
 }
 
-function renderMetrics() {
-  const hoje     = calls.length;
-  const andamento= calls.filter(c => ['accepted','in_service','on_the_way'].includes(c.status)).length;
-  const conc     = calls.filter(c => c.status === 'completed').length;
-  const online   = partners.filter(p => p.status !== 'offline').length;
-  document.getElementById('m-hoje').textContent     = hoje;
-  document.getElementById('m-andamento').textContent = andamento;
-  document.getElementById('m-conc').textContent     = conc;
-  document.getElementById('m-online').textContent   = online;
-}
-
-const STATUS_LABEL = {
-  pending:'Aguardando', dispatched:'Despachado',
-  accepted:'Aceito', on_the_way:'A caminho',
-  in_service:'Em atend.', completed:'Concluído', cancelled:'Cancelado'
-};
-const STATUS_TAG = {
-  pending:'tag-amber', dispatched:'tag-blue', accepted:'tag-blue',
-  on_the_way:'tag-amber', in_service:'tag-orange', completed:'tag-green', cancelled:'tag-red'
-};
-const AV_COLORS = [
-  ['rgba(37,99,235,.15)','#3b82f6'],['rgba(34,197,94,.1)','#22c55e'],
-  ['rgba(249,115,22,.12)','#f97316'],['rgba(239,68,68,.12)','#ef4444'],
-];
-
-function renderCalls() {
-  const el = document.getElementById('calls-list');
-  const active = calls.filter(c => !['completed','cancelled'].includes(c.status)).slice(0,6);
-  if (!active.length) { el.innerHTML = '<div class="empty">Nenhum chamado ativo</div>'; return; }
-  el.innerHTML = active.map((c,i) => {
-    const [bg,col] = AV_COLORS[i % AV_COLORS.length];
-    const initials = (c.clientName||'?').split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
-    const time = c.createdAt ? new Date(c.createdAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : '';
-    return `<div class="call-item">
-      <div class="call-av" style="background:${bg};color:${col}">${initials}</div>
-      <div class="call-info">
-        <div style="display:flex;align-items:center;justify-content:space-between">
-          <span class="call-name">${c.clientName||'Cliente'}</span>
-          <span class="tag ${STATUS_TAG[c.status]||'tag-blue'}">${STATUS_LABEL[c.status]||c.status}</span>
-        </div>
-        <div class="call-addr">${c.address||''}</div>
-        <div class="call-meta">
-          <span class="call-partner">${c.assignedPartnerId ? 'Parceiro: '+c.assignedPartnerId.slice(0,6) : 'Aguardando parceiro'}</span>
-          <span class="call-time">${time}</span>
-        </div>
+// ── Services ──
+function renderServices(list) {
+  const container = document.getElementById('services-list');
+  container.innerHTML = '';
+  list.forEach((s, i) => {
+    const card = document.createElement('div');
+    card.className = 'item-card';
+    card.innerHTML = `
+      <div class="item-header">
+        <div class="item-num">SERVIÇO ${i + 1}</div>
+        <button class="btn-remove" onclick="removeService(${i})">✕ Remover</button>
       </div>
-    </div>`;
-  }).join('');
+      <div id="upload-service-${i}"></div>
+      <div class="grid-3">
+        <div class="field"><label class="field-label">Ícone (emoji)</label><input class="field-input" value="${s.icon||''}" onchange="dados.services[${i}].icon=this.value"/></div>
+        <div class="field" style="grid-column:span 2"><label class="field-label">Título</label><input class="field-input" value="${s.title||''}" onchange="dados.services[${i}].title=this.value"/></div>
+      </div>
+      <div class="field"><label class="field-label">Descrição</label><input class="field-input" value="${s.desc||''}" onchange="dados.services[${i}].desc=this.value"/></div>
+      <div class="field"><label class="field-label">Texto sobre a imagem (opcional)</label><input class="field-input" value="${s.label||''}" placeholder="Ex: Profissional em ação" onchange="dados.services[${i}].label=this.value"/></div>
+    `;
+    container.appendChild(card);
+    setTimeout(() => {
+      renderImageUploader(`upload-service-${i}`, `service-${i}`, s.image, (url) => {
+        dados.services[i].image = url;
+      });
+    }, 10);
+  });
+}
+function addService() { dados.services = dados.services || []; dados.services.push({icon:'🔧',title:'Novo serviço',desc:'',image:'',label:''}); renderServices(dados.services); }
+function removeService(i) { dados.services.splice(i, 1); renderServices(dados.services); }
+
+// ── Equipments ──
+function renderEquipments(list) {
+  const container = document.getElementById('equipments-list');
+  container.innerHTML = '';
+  list.forEach((e, i) => {
+    const card = document.createElement('div');
+    card.className = 'item-card';
+    card.innerHTML = `
+      <div class="item-header">
+        <div class="item-num">EQUIPAMENTO ${i + 1}</div>
+        <button class="btn-remove" onclick="removeEquipment(${i})">✕ Remover</button>
+      </div>
+      <div id="upload-equip-${i}"></div>
+      <div class="field"><label class="field-label">Título</label><input class="field-input" value="${e.title||''}" onchange="dados.equipments[${i}].title=this.value"/></div>
+      <div class="field"><label class="field-label">Descrição</label><input class="field-input" value="${e.desc||''}" onchange="dados.equipments[${i}].desc=this.value"/></div>
+    `;
+    container.appendChild(card);
+    setTimeout(() => {
+      renderImageUploader(`upload-equip-${i}`, `equip-${i}`, e.image, (url) => {
+        dados.equipments[i].image = url;
+      });
+    }, 10);
+  });
+}
+function addEquipment() { dados.equipments = dados.equipments || []; dados.equipments.push({title:'Novo equipamento',desc:'',image:''}); renderEquipments(dados.equipments); }
+function removeEquipment(i) { dados.equipments.splice(i, 1); renderEquipments(dados.equipments); }
+
+// ── Testimonials ──
+function renderTestimonials(list) {
+  const html = list.map((t, i) => `
+    <div class="item-card">
+      <div class="item-header">
+        <div class="item-num">DEPOIMENTO ${i + 1}</div>
+        <button class="btn-remove" onclick="removeTestimonial(${i})">✕ Remover</button>
+      </div>
+      <div class="grid-2">
+        <div class="field"><label class="field-label">Iniciais</label><input class="field-input" value="${t.initials||''}" onchange="dados.testimonials[${i}].initials=this.value"/></div>
+        <div class="field"><label class="field-label">Nome</label><input class="field-input" value="${t.name||''}" onchange="dados.testimonials[${i}].name=this.value"/></div>
+      </div>
+      <div class="field"><label class="field-label">Quando</label><input class="field-input" value="${t.meta||''}" placeholder="há 2 semanas" onchange="dados.testimonials[${i}].meta=this.value"/></div>
+      <div class="field"><label class="field-label">Depoimento</label><textarea class="field-textarea" onchange="dados.testimonials[${i}].text=this.value">${t.text||''}</textarea></div>
+    </div>`).join('');
+  document.getElementById('testimonials-list').innerHTML = html;
+}
+function addTestimonial() { dados.testimonials = dados.testimonials || []; dados.testimonials.push({initials:'??',name:'Cliente',meta:'há alguns dias',text:''}); renderTestimonials(dados.testimonials); }
+function removeTestimonial(i) { dados.testimonials.splice(i, 1); renderTestimonials(dados.testimonials); }
+
+// ── FAQs ──
+function renderFaqs(list) {
+  const html = list.map((f, i) => `
+    <div class="item-card">
+      <div class="item-header">
+        <div class="item-num">PERGUNTA ${i + 1}</div>
+        <button class="btn-remove" onclick="removeFaq(${i})">✕ Remover</button>
+      </div>
+      <div class="field"><label class="field-label">Pergunta</label><input class="field-input" value="${f.q||''}" onchange="dados.faqs[${i}].q=this.value"/></div>
+      <div class="field"><label class="field-label">Resposta</label><textarea class="field-textarea" onchange="dados.faqs[${i}].a=this.value">${f.a||''}</textarea></div>
+    </div>`).join('');
+  document.getElementById('faqs-list').innerHTML = html;
+}
+function addFaq() { dados.faqs = dados.faqs || []; dados.faqs.push({q:'',a:''}); renderFaqs(dados.faqs); }
+function removeFaq(i) { dados.faqs.splice(i, 1); renderFaqs(dados.faqs); }
+
+async function carregar() {
+  try {
+    const doc = await db.collection('siteContent').doc('main').get();
+    if (doc.exists) {
+      dados = doc.data();
+    } else {
+      dados = {
+        brandName:'DESENTUPI PRO',phone:'(11) 99999-9999',phoneRaw:'5511999999999',email:'contato@desentupipro.com.br',cnpj:'CNPJ: 00.000.000/0001-00',anos:'10+',atendimentos:'500',ratingVal:'4.9',
+        heroImage:'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=1600&q=80',
+        aboutImage:'https://images.unsplash.com/photo-1581094271901-8022df4466f9?auto=format&fit=crop&w=900&q=80',
+        aboutText:'A Desentupi Pro é uma plataforma moderna que combina profissionais especializados com tecnologia.',
+        services:[
+          {icon:'🚽',title:'Vaso sanitário',desc:'Desentupimento rápido.',image:'',label:'Profissional em ação'},
+          {icon:'🚰',title:'Pia da cozinha',desc:'Pia e tubulações.',image:'',label:'Atendimento residencial'},
+          {icon:'🚿',title:'Ralo entupido',desc:'Banheiro e área externa.',image:'',label:'Serviço completo'},
+          {icon:'🌊',title:'Esgoto',desc:'Rede de esgoto.',image:'',label:'Equipamento especializado'},
+          {icon:'🍽️',title:'Caixa de gordura',desc:'Limpeza profissional.',image:'',label:'Limpeza comercial'},
+          {icon:'🔎',title:'Caça vazamento',desc:'Detecção precisa.',image:'',label:'Tecnologia avançada'},
+          {icon:'💧',title:'Reparo de canos',desc:'Cano estourado.',image:'',label:'Reparo imediato'},
+          {icon:'🏢',title:'Condomínios',desc:'Empresas e prédios.',image:'',label:'Atendimento empresarial'},
+        ],
+        equipments:[
+          {title:'Hidrojateamento',desc:'Alta pressão.',image:''},
+          {title:'Câmera de inspeção',desc:'Sem quebrar.',image:''},
+          {title:'Máquinas rotativas',desc:'Resistentes.',image:''},
+          {title:'Geofone',desc:'Detecção acústica.',image:''},
+        ],
+        testimonials:[
+          {initials:'MA',name:'Maria Aparecida',meta:'há 2 semanas',text:'Atendimento rápido e educado.'},
+          {initials:'JS',name:'João Silva',meta:'há 1 mês',text:'Chamei de madrugada e vieram em 1h.'},
+          {initials:'CR',name:'Carlos Ribeiro',meta:'há 3 semanas',text:'Excelente trabalho com hidrojato.'},
+        ],
+        faqs:[
+          {q:'Atendem 24h?',a:'Sim, 24 horas todos os dias.'},
+          {q:'Quanto custa?',a:'Avaliação gratuita no local.'},
+          {q:'Em quanto tempo chegam?',a:'Entre 30 e 60 minutos.'},
+          {q:'Como funciona a garantia?',a:'90 dias em todos os serviços.'},
+        ],
+      };
+    }
+    ['brandName','phone','phoneRaw','email','cnpj','anos','atendimentos','ratingVal','aboutText'].forEach(f => {
+      const el = document.getElementById(f);
+      if (el && dados[f] !== undefined) el.value = dados[f];
+    });
+
+    // Render image uploaders
+    renderImageUploader('upload-heroImage', 'hero', dados.heroImage, (url) => { dados.heroImage = url; });
+    renderImageUploader('upload-aboutImage', 'about', dados.aboutImage, (url) => { dados.aboutImage = url; });
+
+    renderServices(dados.services || []);
+    renderEquipments(dados.equipments || []);
+    renderTestimonials(dados.testimonials || []);
+    renderFaqs(dados.faqs || []);
+  } catch (e) {
+    showToast('Erro ao carregar: ' + e.message, true);
+  }
 }
 
-const P_STATUS = {available:'Disponível',on_the_way:'A caminho',in_service:'Em atend.',offline:'Offline'};
-const P_DOT    = {available:'#22c55e',on_the_way:'#f59e0b',in_service:'#ef4444',offline:'#475569'};
-
-function renderPartners() {
-  const el = document.getElementById('partners-list');
-  if (!partners.length) { el.innerHTML = '<div class="empty">Nenhum parceiro cadastrado</div>'; return; }
-  el.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1px;background:var(--border)">` +
-    partners.map(p => `
-      <div style="background:var(--bg3);padding:12px 14px;display:flex;align-items:center;gap:10px">
-        <div style="width:34px;height:34px;border-radius:50%;background:rgba(37,99,235,.15);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#3b82f6;flex-shrink:0">${p.avatarInitials||'?'}</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:12px;font-weight:600;color:var(--txt)">${p.name||'Parceiro'}</div>
-          <div style="font-size:10px;color:var(--txt3);margin-top:1px">${p.phone||''}</div>
-          <div style="font-size:10px;color:#f59e0b;margin-top:1px">${'★'.repeat(Math.round(p.rating||5))} ${(p.rating||5).toFixed(1)}</div>
-        </div>
-        <div style="width:8px;height:8px;border-radius:50%;background:${P_DOT[p.status]||'#475569'};flex-shrink:0" title="${P_STATUS[p.status]||p.status}"></div>
-      </div>`).join('') + '</div>';
+async function salvar() {
+  const btn = document.getElementById('btn-save');
+  btn.disabled = true; btn.textContent = '💾 Salvando...';
+  try {
+    ['brandName','phone','phoneRaw','email','cnpj','anos','atendimentos','ratingVal','aboutText'].forEach(f => {
+      const el = document.getElementById(f);
+      if (el) dados[f] = el.value;
+    });
+    await db.collection('siteContent').doc('main').set(dados, { merge: false });
+    showToast('✅ Salvo! As 200 páginas foram atualizadas.');
+  } catch (e) {
+    showToast('Erro ao salvar: ' + e.message, true);
+  } finally {
+    btn.disabled = false; btn.textContent = '💾 Salvar';
+  }
 }
 
-function showToast(msg) {
+function showToast(msg, err=false) {
   const t = document.createElement('div');
-  t.className = 'toast';
+  t.className = 'toast' + (err ? ' error' : '');
   t.textContent = msg;
   document.body.appendChild(t);
   setTimeout(() => t.remove(), 3500);
 }
-
-// ── Init ───────────────────────────────────────────────────────────────────────
-loadData();
-setInterval(loadData, 10000); // atualiza a cada 10 segundos
 </script>
 </body>
 </html>
