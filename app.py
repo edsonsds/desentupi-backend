@@ -64,10 +64,12 @@ def enviar_whatsapp(numero, texto):
         return
     
     url = f"{EVOLUTION_URL}/message/sendText/{EVOLUTION_INSTANCE}"
+    # Limpa o número (remove @s.whatsapp.net se vier)
+    numero_limpo = numero.split('@')[0] if '@' in numero else numero
     payload = {
-        'number': numero,
-        'options': {'delay': 800, 'presence': 'composing'},
-        'textMessage': {'text': texto}
+        'number': numero_limpo,
+        'text': texto,
+        'delay': 800,
     }
     headers = {'apikey': EVOLUTION_KEY, 'Content-Type': 'application/json'}
     
