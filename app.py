@@ -1,4 +1,4 @@
-# app.py — Backend Desentupi Pro v5.0
+# app.py — Backend Desentupi Pro v5.1
 # IA Maria com pausa, anti-duplicata, controle pelo painel admin
 import os, re, json
 from datetime import datetime, timezone, timedelta
@@ -300,7 +300,7 @@ def abrir_chamado(dados, numero):
 # ─── Rotas básicas ────────────────────────────────────────────────────────────
 
 @app.route('/')
-def index(): return jsonify({'status': 'ok', 'app': 'Desentupi Pro Backend', 'version': '5.0'})
+def index(): return jsonify({'status': 'ok', 'app': 'Desentupi Pro Backend', 'version': '5.1'})
 
 @app.route('/health')
 def health(): return jsonify({'status': 'healthy'})
@@ -416,12 +416,21 @@ def listar_calls():
         docs = q.get()
         calls = []
         for d in docs:
-            data = d.to_dict(); data['id'] = d.id
-            for k in ['createdAt', 'completedAt', 'acceptedAt', 'startedAt', 'dispatchedAt', 'openedAt']:
-                if data.get(k) and hasattr(data[k], 'isoformat'): data[k] = data[k].isoformat()
-            calls.append(data)
+            try:
+                data = d.to_dict(); data['id'] = d.id
+                for k in ['createdAt', 'completedAt', 'acceptedAt', 'startedAt', 'dispatchedAt', 'openedAt']:
+                    if data.get(k) and hasattr(data[k], 'isoformat'): data[k] = data[k].isoformat()
+                calls.append(data)
+            except Exception as inner:
+                print(f"[CALLS] Erro ao processar doc {d.id}: {inner}")
+                continue
         return jsonify({'calls': calls})
-    except Exception as e: return jsonify({'error': str(e)}), 500
+    except Exception as e:
+        import traceback
+        tb = traceback.format_exc()
+        print(f"[CALLS ERRO 500] {type(e).__name__}: {e}")
+        print(f"[CALLS TRACEBACK]\n{tb}")
+        return jsonify({'error': str(e), 'type': type(e).__name__}), 500
 
 @app.route('/api/calls', methods=['POST'])
 def criar_call():
@@ -468,12 +477,27 @@ def listar_partners():
         docs = db.collection('partners').get()
         partners = []
         for d in docs:
-            data = d.to_dict(); data['id'] = d.id
-            calls = db.collection('calls').where('assignedPartnerId', '==', d.id).where('status', '==', 'completed').get()
-            data['totalCompleted'] = len(calls)
-            data['totalRevenue'] = sum(float(c.to_dict().get('valor', 0) or 0) for c in calls)
-            partners.append(data)
+            try:
+                data = d.to_dict(); data['id'] = d.id
+                try:
+                    calls = db.collection('calls').where('assignedPartnerId', '==', d.id).where('status', '==', 'completed').get()
+                    data['totalCompleted'] = len(calls)
+                    data['totalRevenue'] = sum(float(c.to_dict().get('valor', 0) or 0) for c in calls)
+                except Exception as ex_calls:
+                    print(f"[PARTNERS] Erro ao calcular calls para {d.id}: {ex_calls}")
+                    data['totalCompleted'] = 0
+                    data['totalRevenue'] = 0
+                partners.append(data)
+            except Exception as inner:
+                print(f"[PARTNERS] Erro ao processar doc {d.id}: {inner}")
+                continue
         return jsonify({'partners': partners})
+    except Exception as e:
+        import traceback
+        tb = traceback.format_exc()
+        print(f"[PARTNERS ERRO 500] {type(e).__name__}: {e}")
+        print(f"[PARTNERS TRACEBACK]\n{tb}")
+        return jsonify({'error': str(e), 'type': type(e).__name__}), 500
     except Exception as e: return jsonify({'error': str(e)}), 500
 
 @app.route('/api/partners/<partner_id>/toggle', methods=['POST'])
