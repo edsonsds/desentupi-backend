@@ -1,4 +1,4 @@
-# app.py — Backend Desentupi Pro v5.1
+# app.py — Backend Desentupi Pro v5.2
 # IA Maria com pausa, anti-duplicata, controle pelo painel admin
 import os, re, json
 from datetime import datetime, timezone, timedelta
@@ -300,7 +300,7 @@ def abrir_chamado(dados, numero):
 # ─── Rotas básicas ────────────────────────────────────────────────────────────
 
 @app.route('/')
-def index(): return jsonify({'status': 'ok', 'app': 'Desentupi Pro Backend', 'version': '5.1'})
+def index(): return jsonify({'status': 'ok', 'app': 'Desentupi Pro Backend', 'version': '5.2'})
 
 @app.route('/health')
 def health(): return jsonify({'status': 'healthy'})
@@ -479,14 +479,10 @@ def listar_partners():
         for d in docs:
             try:
                 data = d.to_dict(); data['id'] = d.id
-                try:
-                    calls = db.collection('calls').where('assignedPartnerId', '==', d.id).where('status', '==', 'completed').get()
-                    data['totalCompleted'] = len(calls)
-                    data['totalRevenue'] = sum(float(c.to_dict().get('valor', 0) or 0) for c in calls)
-                except Exception as ex_calls:
-                    print(f"[PARTNERS] Erro ao calcular calls para {d.id}: {ex_calls}")
-                    data['totalCompleted'] = 0
-                    data['totalRevenue'] = 0
+                # Não calcula totalCompleted/totalRevenue aqui — economiza queries
+                # Os valores já devem estar salvos no doc do partner
+                data['totalCompleted'] = data.get('totalCompleted', 0)
+                data['totalRevenue'] = data.get('totalRevenue', 0)
                 partners.append(data)
             except Exception as inner:
                 print(f"[PARTNERS] Erro ao processar doc {d.id}: {inner}")
@@ -640,6 +636,97 @@ def set_ai_status():
         }, merge=True)
         return jsonify({'success': True, 'enabled': enabled})
     except Exception as e: return jsonify({'error': str(e)}), 500
+
+# ─── Cron ─────────────────────────────────────────────────────────────────────
+
+# ─── Gerenciamento Evolution API (WhatsApp) ───────────────────────────────────
+
+@app.route('/api/whatsapp/status', methods=['GET'])
+def whatsapp_status():
+    """Verifica status da conexão do WhatsApp"""
+    if not EVOLUTION_URL:
+        return jsonify({'connected': False, 'error': 'EVOLUTION_URL não configurada'}), 200
+    try:
+        r = requests.get(
+            f"{EVOLUTION_URL}/instance/connectionState/{EVOLUTION_INSTANCE}",
+            headers={'apikey': EVOLUTION_KEY},
+            timeout=10
+        )
+        if r.status_code == 200:
+            data = r.json()
+            instance = data.get('instance', {})
+            state = instance.get('state', 'unknown')
+            return jsonify({
+                'connected': state == 'open',
+                'state': state,
+                'instance': EVOLUTION_INSTANCE,
+                'raw': data
+            })
+        return jsonify({
+            'connected': False,
+            'state': 'error',
+            'instance': EVOLUTION_INSTANCE,
+            'http_status': r.status_code,
+            'response': r.text[:300]
+        }), 200
+    except Exception as e:
+        return jsonify({'connected': False, 'error': str(e)}), 200
+
+@app.route('/api/whatsapp/qrcode', methods=['GET'])
+def whatsapp_qrcode():
+    """Pega o QR Code da instância para conectar"""
+    if not EVOLUTION_URL:
+        return jsonify({'error': 'EVOLUTION_URL não configurada'}), 500
+    try:
+        r = requests.get(
+            f"{EVOLUTION_URL}/instance/connect/{EVOLUTION_INSTANCE}",
+            headers={'apikey': EVOLUTION_KEY},
+            timeout=15
+        )
+        if r.status_code in (200, 201):
+            data = r.json()
+            # Evolution v2 retorna 'base64' ou 'code'
+            qr = data.get('base64') or data.get('qrcode', {}).get('base64') or data.get('code')
+            return jsonify({
+                'success': True,
+                'qrcode': qr,
+                'instance': EVOLUTION_INSTANCE,
+                'raw': data
+            })
+        return jsonify({'error': f'HTTP {r.status_code}', 'response': r.text[:300]}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/whatsapp/logout', methods=['POST'])
+def whatsapp_logout():
+    """Desconecta o WhatsApp atual (para conectar outro número)"""
+    if not EVOLUTION_URL:
+        return jsonify({'error': 'EVOLUTION_URL não configurada'}), 500
+    try:
+        r = requests.delete(
+            f"{EVOLUTION_URL}/instance/logout/{EVOLUTION_INSTANCE}",
+            headers={'apikey': EVOLUTION_KEY},
+            timeout=10
+        )
+        return jsonify({'success': r.status_code in (200, 201), 'status': r.status_code, 'response': r.text[:300]})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/whatsapp/restart', methods=['POST'])
+def whatsapp_restart():
+    """Reinicia a instância (sem desconectar)"""
+    if not EVOLUTION_URL:
+        return jsonify({'error': 'EVOLUTION_URL não configurada'}), 500
+    try:
+        r = requests.post(
+            f"{EVOLUTION_URL}/instance/restart/{EVOLUTION_INSTANCE}",
+            headers={'apikey': EVOLUTION_KEY},
+            timeout=15
+        )
+        return jsonify({'success': r.status_code in (200, 201), 'status': r.status_code, 'response': r.text[:300]})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 
 # ─── Cron ─────────────────────────────────────────────────────────────────────
 
