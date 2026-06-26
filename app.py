@@ -1,6 +1,6 @@
-# app.py — Backend Desentupi Pro v5.2
+# app.py — Backend Desentupi Pro v5.3 (com áudio)
 # IA Maria com pausa, anti-duplicata, controle pelo painel admin
-import os, re, json
+import os, re, json, time, base64
 from datetime import datetime, timezone, timedelta
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -22,6 +22,7 @@ EVOLUTION_URL = os.environ.get('EVOLUTION_URL', '')
 EVOLUTION_KEY = os.environ.get('EVOLUTION_KEY', '')
 EVOLUTION_INSTANCE = os.environ.get('EVOLUTION_INSTANCE', 'desentupi-pro')
 WEBHOOK_SECRET = os.environ.get('WEBHOOK_SECRET', 'desentupi2024')
+HUGGINGFACE_TOKEN = os.environ.get('HUGGINGFACE_TOKEN', '')  # v5.3: Para transcrição de áudio
 
 processed_ids = set()
 WARRANTY_DAYS = 90
@@ -300,10 +301,83 @@ def abrir_chamado(dados, numero):
 # ─── Rotas básicas ────────────────────────────────────────────────────────────
 
 @app.route('/')
-def index(): return jsonify({'status': 'ok', 'app': 'Desentupi Pro Backend', 'version': '5.2'})
+def index(): return jsonify({'status': 'ok', 'app': 'Desentupi Pro Backend', 'version': '5.3'})
 
 @app.route('/health')
 def health(): return jsonify({'status': 'healthy'})
+
+# ─── v5.3: Transcrição de áudio via Hugging Face Whisper ───────────────────────
+
+def baixar_audio_evolution(numero_raw, msg_id):
+    """Baixa o arquivo de áudio do WhatsApp via Evolution API"""
+    if not EVOLUTION_URL or not EVOLUTION_KEY:
+        return None
+    try:
+        url = f"{EVOLUTION_URL}/chat/getBase64FromMediaMessage/{EVOLUTION_INSTANCE}"
+        payload = {
+            "message": {"key": {"id": msg_id, "remoteJid": numero_raw}},
+            "convertToMp4": False
+        }
+        r = requests.post(url, headers={'apikey': EVOLUTION_KEY, 'Content-Type': 'application/json'},
+                          json=payload, timeout=20)
+        if r.status_code in (200, 201):
+            data = r.json()
+            b64 = data.get('base64') or data.get('media') or ''
+            if b64:
+                # base64 já importado no topo
+                return base64.b64decode(b64)
+        print(f"[ÁUDIO DOWNLOAD] HTTP {r.status_code}: {r.text[:200]}")
+        return None
+    except Exception as e:
+        print(f"[ÁUDIO DOWNLOAD ERRO] {e}")
+        return None
+
+def transcrever_via_huggingface(audio_bytes):
+    """Transcreve áudio usando Whisper no Hugging Face Inference API (grátis)"""
+    if not HUGGINGFACE_TOKEN:
+        print("[HF] HUGGINGFACE_TOKEN não configurado")
+        return None
+    api_url = "https://api-inference.huggingface.co/models/openai/whisper-large-v3"
+    headers = {
+        "Authorization": f"Bearer {HUGGINGFACE_TOKEN}",
+        "Content-Type": "audio/ogg"
+    }
+    try:
+        for tentativa in range(3):
+            r = requests.post(api_url, headers=headers, data=audio_bytes, timeout=60)
+            if r.status_code == 200:
+                data = r.json()
+                texto = data.get('text', '').strip()
+                return texto if texto else None
+            elif r.status_code == 503:
+                estimated = 20
+                try:
+                    estimated = r.json().get('estimated_time', 20)
+                except:
+                    pass
+                print(f"[HF] Modelo carregando, esperando {estimated}s (tentativa {tentativa+1}/3)")
+                # time já importado no topo
+                time.sleep(min(estimated, 30))
+                continue
+            else:
+                print(f"[HF ERRO] HTTP {r.status_code}: {r.text[:200]}")
+                return None
+        return None
+    except Exception as e:
+        print(f"[HF EXCEPTION] {e}")
+        return None
+
+def transcrever_audio_whatsapp(numero_raw, msg_id):
+    """Pipeline: baixa áudio do WhatsApp e transcreve via Hugging Face"""
+    audio_bytes = baixar_audio_evolution(numero_raw, msg_id)
+    if not audio_bytes:
+        print(f"[ÁUDIO] Falha ao baixar áudio de {numero_raw}")
+        return None
+    print(f"[ÁUDIO] Baixados {len(audio_bytes)} bytes, enviando pra Hugging Face...")
+    texto = transcrever_via_huggingface(audio_bytes)
+    if texto:
+        print(f"[ÁUDIO] Transcrito: {texto[:100]}")
+    return texto
 
 # ─── Webhook WhatsApp ─────────────────────────────────────────────────────────
 
@@ -333,6 +407,28 @@ def webhook_wpp():
         msg_obj.get('imageMessage', {}).get('caption', '') or
         msg_obj.get('videoMessage', {}).get('caption', '')
     ).strip()
+    
+    # ─── NOVO v5.3: Detecta e transcreve áudio ───
+    audio_msg = msg_obj.get('audioMessage') or msg_obj.get('pttMessage')
+    if audio_msg and not texto:
+        try:
+            print(f"[ÁUDIO] Detectado áudio de {numero}, tentando transcrever...")
+            texto_transcrito = transcrever_audio_whatsapp(numero_raw, msg_id)
+            if texto_transcrito:
+                texto = f"🎙️ {texto_transcrito}"
+                print(f"[ÁUDIO] Transcrito com sucesso: {texto_transcrito[:80]}...")
+            else:
+                # Falha silenciosa: pede pra mandar por texto
+                resposta = "Desculpa, não consegui entender seu áudio. Pode me mandar uma mensagem de texto, por favor? 😊"
+                enviar_whatsapp(numero_raw, resposta)
+                salvar_mensagem(numero, 'assistant', resposta)
+                return jsonify({'status': 'audio_transcription_failed'}), 200
+        except Exception as e:
+            print(f"[ÁUDIO ERRO] {e}")
+            resposta = "Tive um problema técnico ao processar seu áudio. Pode me mandar por texto, por favor? 🙏"
+            enviar_whatsapp(numero_raw, resposta)
+            salvar_mensagem(numero, 'assistant', resposta)
+            return jsonify({'status': 'audio_error'}), 200
     
     if not numero or not texto:
         return jsonify({'status': 'no_content'}), 200
